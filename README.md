@@ -173,7 +173,7 @@ bash scripts/run_all.sh
 pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 ```
 
-## 贡献指南
+## 开发指南
 
 1. 页面对象在 `src/auto/pages/`
 2. 工具模块在 `src/auto/utils/`
