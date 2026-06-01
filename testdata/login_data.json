@@ -1,0 +1,14 @@
+# 登录测试参数化数据
+
+[
+  {
+    "username": "user1",
+    "password": "pass123",
+    "expected": "login_success"
+  },
+  {
+    "username": "user2",
+    "password": "pass456",
+    "expected": "login_success"
+  }
+]

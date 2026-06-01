@@ -1,0 +1,20 @@
+# QA/测试环境配置
+
+# 应用配置
+app:
+  base_url: "http://qa.example.com"
+  env: "qa"
+
+# 账号配置
+account:
+  username: "qa_user"
+  password: "qa_password"
+
+# 浏览器配置（覆盖 base.yaml）
+browser:
+  headless: false
+
+# 特殊开关
+features:
+  auto_login: true
+  debug_mode: false

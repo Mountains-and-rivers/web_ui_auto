@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=45", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pythonPro"
+version = "1.0.0"
+description = "自动化测试框架 - 基于 Playwright + Pytest"
+authors = [
+    { name = "Author", email = "author@example.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "playwright>=1.40.0",
+    "pytest>=7.4.0",
+    "pytest-html>=4.0.0",
+    "allure-pytest>=2.13.0",
+    "pyyaml>=6.0",
+    "loguru>=0.7.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.0.0",
+    "flake8>=6.0.0",
+    "isort>=5.12.0",
+]
+
+[tool.pytest.ini_options]
+# pytest 配置
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short --strict-markers"
+markers = [
+    "smoke: 冒烟测试",
+    "critical: 关键路径",
+    "api: 接口测试",
+    "ui: UI 测试",
+]
+log_cli = true
+log_cli_level = "INFO"
+
+[tool.allure]
+# Allure 报告配置
+report_dir = "reports/allure-results"
+
+[tool.black]
+# Black 格式化配置
+line-length = 100
+target-version = ["py38"]
+include = '\.pyi?$'
+
+[tool.isort]
+# isort 配置
+profile = "black"
+line_length = 100
