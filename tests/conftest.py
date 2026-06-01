@@ -18,9 +18,12 @@ fix_encoding()
 
 import os
 import traceback
+import tkinter as tk
+import ctypes
 import pytest
 from _pytest.outcomes import Skipped
 from playwright.sync_api import sync_playwright
+import time
 
 # 添加 src 目录到 Python 路径
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -57,6 +60,15 @@ def browser(settings):
         Playwright browser 对象
     """
     logger.info("启动浏览器")
+    
+    # 获取系统屏幕分辨率
+    root = tk.Tk()
+    root.withdraw()  # 隐藏tkinter窗口
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    root.destroy()
+    logger.info(f"系统屏幕分辨率: {screen_width} x {screen_height}")
+    
     playwright = sync_playwright().start()
 
     # 根据配置选择浏览器类型
@@ -72,6 +84,10 @@ def browser(settings):
         browser = playwright.firefox.launch(headless=headless)
     else:
         browser = playwright.webkit.launch(headless=headless)
+
+    # 保存分辨率到浏览器对象，供后续使用
+    browser.screen_width = screen_width
+    browser.screen_height = screen_height
 
     yield browser
 
@@ -105,7 +121,16 @@ def context(browser, settings):
         record_video_dir = str(video_dir)
         logger.info(f"录屏目录: {record_video_dir}")
 
-    context = browser.new_context(record_video_dir=record_video_dir)
+    # 获取系统屏幕分辨率
+    screen_width = getattr(browser, 'screen_width', 1920)
+    screen_height = getattr(browser, 'screen_height', 1080)
+    logger.info(f"浏览器分辨率: {screen_width} x {screen_height}")
+    
+    # 设置视口为屏幕大小
+    context = browser.new_context(
+        record_video_dir=record_video_dir,
+        viewport={"width": screen_width, "height": screen_height}
+    )
     yield context
 
     # 清理
@@ -128,6 +153,16 @@ def page(context):
     """
     logger.info("创建页面对象")
     page = context.new_page()
+    
+    # 最大化浏览器窗口到屏幕大小
+    try:
+        page.evaluate("window.moveTo(0, 0); window.resizeTo(screen.width, screen.height);")
+        logger.info("已最大化浏览器窗口")
+    except Exception as e:
+        logger.debug(f"JavaScript 最大化失败: {e}")
+    
+    page.wait_for_timeout(200)
+    
     yield page
 
     # 清理
@@ -147,9 +182,8 @@ def pytest_runtest_call(item):
 
     sink_id = logger.add(_sink, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}")
 
-    logger.info("========== 测试开始 ==========")
-    logger.info(f"用例: {item.nodeid}")
-    logger.info(f"测试文件: {item.fspath}")
+    # 清空初始化时的日志，仅收集测试用例执行时的日志
+    log_messages.clear()
 
     passed = False
     skipped = False
@@ -163,60 +197,57 @@ def pytest_runtest_call(item):
     except Skipped as exc:
         skipped = True
         excinfo = exc
-        raise
     except Exception as exc:
         failed = True
         excinfo = exc
-        raise
     finally:
         logger.remove(sink_id)
 
-    tags = [marker.name for marker in item.iter_markers() if marker.name != "parametrize"]
-    tags_text = ", ".join(tags) if tags else "无"
+        tags = [marker.name for marker in item.iter_markers() if marker.name != "parametrize"]
+        tags_text = ", ".join(tags) if tags else "无"
 
-    if passed:
-        result_text = "✅ PASSED"
-    elif skipped:
-        result_text = "⚠️ SKIPPED"
-    else:
-        result_text = "❌ FAILED"
-
-    summary_lines = [
-        f"\n========== 用例执行信息 ==========",
-        f"用例: {item.nodeid}",
-        f"标签: {tags_text}",
-        f"执行结果: {result_text}",
-        "执行日志:",
-    ]
-    summary_lines.extend(log_messages or ["(无日志记录)"])
-
-    if failed and excinfo is not None:
-        summary_lines.append("错误原因:")
-        if isinstance(excinfo, tuple) and len(excinfo) == 3:
-            error_lines = traceback.format_exception(*excinfo)
-        elif hasattr(excinfo, "getrepr"):
-            error_lines = traceback.format_exception(excinfo.type, excinfo.value, excinfo.tb)
-        elif isinstance(excinfo, BaseException):
-            error_lines = traceback.format_exception(type(excinfo), excinfo, excinfo.__traceback__)
+        if passed:
+            result_text = "✅ PASSED"
+        elif skipped:
+            result_text = "⚠️ SKIPPED"
         else:
-            error_lines = [str(excinfo)]
-        summary_lines.extend([line.rstrip("\n") for line in error_lines if line.strip()])
+            result_text = "❌ FAILED"
 
-    summary_lines.append("========== 用例执行信息结束 ==========")
+        summary_lines = [
+            f"\n========== 用例执行信息 ==========",
+            f"用例: {item.nodeid}",
+            f"标签: {tags_text}",
+            f"执行结果: {result_text}",
+            "执行日志:",
+        ]
+        summary_lines.extend(log_messages or ["(无日志记录)"])
 
-    for line in summary_lines:
-        print(line)
-        logger.info(line)
+        if failed and excinfo is not None:
+            summary_lines.append("错误原因:")
+            if isinstance(excinfo, tuple) and len(excinfo) == 3:
+                error_lines = traceback.format_exception(*excinfo)
+            elif hasattr(excinfo, "getrepr"):
+                error_lines = traceback.format_exception(excinfo.type, excinfo.value, excinfo.tb)
+            elif isinstance(excinfo, BaseException):
+                error_lines = traceback.format_exception(type(excinfo), excinfo, excinfo.__traceback__)
+            else:
+                error_lines = [str(excinfo)]
+            summary_lines.extend([line.rstrip("\n") for line in error_lines if line.strip()])
 
-    if failed:
-        try:
-            if "page" in item.fixturenames:
-                page = item.funcargs.get("page")
-                if page:
-                    logger.error("测试失败，保存失败截图")
-                    take_screenshot(page, f"failure_{item.name}")
-        except Exception as e:
-            logger.warning(f"失败截图保存失败: {e}")
+        summary_lines.append("========== 用例执行信息结束 ==========")
+
+        for line in summary_lines:
+            print(line)
+
+        if failed:
+            try:
+                if "page" in item.fixturenames:
+                    page = item.funcargs.get("page")
+                    if page:
+                        logger.error("测试失败，保存失败截图")
+                        take_screenshot(page, f"failure_{item.name}")
+            except Exception as e:
+                logger.warning(f"失败截图保存失败: {e}")
 
 
 

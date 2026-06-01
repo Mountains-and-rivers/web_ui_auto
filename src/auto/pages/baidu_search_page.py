@@ -54,8 +54,22 @@ class BaiduSearchPage(BasePage):
         """
         try:
             logger.info(f"搜索关键词: {keyword}")
-            # 输入搜索词
-            self.input_text(self.SEARCH_INPUT, keyword)
+            
+            # 获取页面当前大小以计算输入框位置
+            page_size = self.page.viewport_size
+            if page_size:
+                # 根据实际窗口大小计算输入框中央坐标
+                center_x = page_size['width'] // 2
+                center_y = 238  # 百度logo下方固定距离
+                logger.info(f"页面分辨率: {page_size['width']} x {page_size['height']}, 计算输入框坐标: ({center_x}, {center_y})")
+            else:
+                # 如果获取失败，使用默认坐标
+                center_x = 960
+                center_y = 238
+                logger.info(f"使用默认输入框坐标: ({center_x}, {center_y})")
+            
+            # 通过坐标点击输入框并输入
+            self.input_text_by_coordinates(center_x, center_y, keyword)
             logger.info(f"已输入搜索词: {keyword}")
 
             # 点击搜索按钮

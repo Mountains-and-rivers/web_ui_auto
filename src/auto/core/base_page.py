@@ -118,7 +118,14 @@ class BasePage:
         try:
             logger.info(f"在元素中输入文本: {locator}, 文本: {text}")
             element = self.find_element(locator, timeout)
-            element.fill(text, timeout=self.timeout)
+            # 先点击元素获得焦点
+            element.click(timeout=self.timeout)
+            # 等待一下确保焦点已获得
+            self.page.wait_for_timeout(100)
+            # 清空已有内容
+            element.clear(timeout=self.timeout)
+            # 使用 type 模拟真实输入，而不是 fill
+            element.type(text, delay=50)
             logger.info(f"输入文本成功: {locator}")
         except Exception as e:
             logger.error(f"输入文本失败: {locator}, 错误: {e}")
@@ -144,6 +151,36 @@ class BasePage:
             return text or ""
         except Exception as e:
             logger.error(f"获取文本失败: {locator}, 错误: {e}")
+            raise
+
+    def input_text_by_coordinates(self, x: int, y: int, text: str) -> None:
+        """
+        通过坐标点击并输入文本。
+
+        Args:
+            x: X 坐标
+            y: Y 坐标
+            text: 要输入的文本
+        """
+        try:
+            logger.info(f"通过坐标输入文本: ({x}, {y}), 文本: {text}")
+            # 点击指定坐标
+            self.page.mouse.click(x, y)
+            logger.info(f"已点击坐标: ({x}, {y})")
+            
+            # 等待焦点获得
+            self.page.wait_for_timeout(100)
+            
+            # 清空已有内容
+            self.page.keyboard.press("Control+A")
+            self.page.wait_for_timeout(50)
+            
+            # 输入文本
+            self.page.keyboard.type(text, delay=50)
+            logger.info(f"通过坐标输入文本成功: {text}")
+        except Exception as e:
+            logger.error(f"通过坐标输入文本失败: {e}")
+            take_screenshot(self.page, "input_by_coordinates_failed")
             raise
 
     def is_visible(self, locator: str, timeout: int = 5000) -> bool:
