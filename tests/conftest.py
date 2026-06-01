@@ -17,7 +17,9 @@ from auto.encoding_fix import fix_encoding
 fix_encoding()
 
 import os
+import traceback
 import pytest
+from _pytest.outcomes import Skipped
 from playwright.sync_api import sync_playwright
 
 # 添加 src 目录到 Python 路径
@@ -133,53 +135,81 @@ def page(context):
     page.close()
 
 
-@pytest.fixture(autouse=True)
-def log_test_info(request):
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_call(item):
     """
-    记录测试信息。
-
-    Autouse: 自动应用到所有测试
-
-    Args:
-        request: pytest request 对象
+    pytest hook - 执行测试函数并在同一个 hook 中收集标签、执行结果、执行日志。
     """
-    # 测试开始
-    logger.info(f"========== 测试开始 ==========")
-    logger.info(f"测试函数: {request.node.name}")
-    logger.info(f"测试文件: {request.node.fspath}")
+    log_messages = []
 
-    yield
+    def _sink(message):
+        log_messages.append(str(message).rstrip("\n"))
 
-    # 测试结束
-    if request.node.rep_call.passed:
-        logger.info(f"测试结果: ✅ PASSED")
+    sink_id = logger.add(_sink, level="INFO", format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {name}:{function}:{line} - {message}")
+
+    logger.info("========== 测试开始 ==========")
+    logger.info(f"用例: {item.nodeid}")
+    logger.info(f"测试文件: {item.fspath}")
+
+    passed = False
+    skipped = False
+    failed = False
+    excinfo = None
+
+    try:
+        outcome = yield
+        outcome.get_result()
+        passed = True
+    except Skipped as exc:
+        skipped = True
+        excinfo = exc
+        raise
+    except Exception as exc:
+        failed = True
+        excinfo = exc
+        raise
+    finally:
+        logger.remove(sink_id)
+
+    tags = [marker.name for marker in item.iter_markers() if marker.name != "parametrize"]
+    tags_text = ", ".join(tags) if tags else "无"
+
+    if passed:
+        result_text = "✅ PASSED"
+    elif skipped:
+        result_text = "⚠️ SKIPPED"
     else:
-        logger.info(f"测试结果: ❌ FAILED")
-    logger.info(f"========== 测试结束 ==========\n")
+        result_text = "❌ FAILED"
 
+    summary_lines = [
+        f"\n========== 用例执行信息 ==========",
+        f"用例: {item.nodeid}",
+        f"标签: {tags_text}",
+        f"执行结果: {result_text}",
+        "执行日志:",
+    ]
+    summary_lines.extend(log_messages or ["(无日志记录)"])
 
-@pytest.hookimpl(tryfirst=True, hookwrapper=True)
-def pytest_runtest_makereport(item, call):
-    """
-    pytest hook - 测试报告生成。
+    if failed and excinfo is not None:
+        summary_lines.append("错误原因:")
+        if isinstance(excinfo, tuple) and len(excinfo) == 3:
+            error_lines = traceback.format_exception(*excinfo)
+        elif hasattr(excinfo, "getrepr"):
+            error_lines = traceback.format_exception(excinfo.type, excinfo.value, excinfo.tb)
+        elif isinstance(excinfo, BaseException):
+            error_lines = traceback.format_exception(type(excinfo), excinfo, excinfo.__traceback__)
+        else:
+            error_lines = [str(excinfo)]
+        summary_lines.extend([line.rstrip("\n") for line in error_lines if line.strip()])
 
-    用于记录测试执行结果和失败时的截图。
+    summary_lines.append("========== 用例执行信息结束 ==========")
 
-    Args:
-        item: 测试项目
-        call: 测试调用信息
-    """
-    outcome = yield
-    rep = outcome.get_result()
+    for line in summary_lines:
+        print(line)
+        logger.info(line)
 
-    # 保存报告到 item，供后续使用
-    if rep.when == "call":
-        item.rep_call = rep
-
-    # 失败时自动截图
-    if rep.failed and call.when == "call":
+    if failed:
         try:
-            # 尝试获取 page fixture
             if "page" in item.fixturenames:
                 page = item.funcargs.get("page")
                 if page:
@@ -187,6 +217,7 @@ def pytest_runtest_makereport(item, call):
                     take_screenshot(page, f"failure_{item.name}")
         except Exception as e:
             logger.warning(f"失败截图保存失败: {e}")
+
 
 
 def pytest_configure(config):
