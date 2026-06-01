@@ -1,5 +1,4 @@
-# web_ui_auto
-# pythonPro 自动化测试框架
+# web_ui_auto web端UI自动化测试框架
 
 > 基于 Playwright + Pytest 的企业级自动化测试框架
 
@@ -19,12 +18,12 @@
 ## 目录结构说明
 
 ```
-pythonPro/                      # 项目根目录（全小写、短名）
-├── .gitignore                # 忽略：logs、reports、videos、.env、venv
-├── README.md                 # 项目说明、部署、运行命令
-├── pyproject.toml            # 依赖 + pytest + allure 配置（企业主推）
+pythonPro/                     # 项目根目录（全小写、短名）
+├── .gitignore                 # 忽略：logs、reports、videos、.env、venv
+├── README.md                  # 项目说明、部署、运行命令
+├── pyproject.toml             # 依赖 + pytest + allure 配置（企业主推）
 ├── requirements.txt           # 依赖包锁定（pip freeze 产出）
-├── requirements-dev.txt      # 开发依赖：pytest、black、flake8、allure-pytest
+├── requirements-dev.txt       # 开发依赖：pytest、black、flake8、allure-pytest
 │
 ├── config/                    # 🔥 企业必分环境配置
 │   ├── __init__.py
@@ -39,9 +38,9 @@ pythonPro/                      # 项目根目录（全小写、短名）
 │       ├── __init__.py
 │       ├── core/              # 核心封装（企业公共底座）
 │       │   ├── __init__.py
-│       │   ├── base_page.py  # POM 基类：等待、点击、输入、截图、录屏
+│       │   ├── base_page.py   # POM 基类：等待、点击、输入、截图、录屏
 │       │   ├── base_api.py    # 接口基类：请求、签名、重试、异常封装
-│       │   └── exceptions.py # 自定义异常：元素不存在、登录失败等
+│       │   └── exceptions.py  # 自定义异常：元素不存在、登录失败等
 │       │
 │       ├── utils/             # 🔥 工具层（企业统一抽离）
 │       │   ├── __init__.py
@@ -51,20 +50,20 @@ pythonPro/                      # 项目根目录（全小写、短名）
 │       │   ├── screenshot.py  # 截图封装（含 allure 附件）
 │       │   └── common.py      # 通用工具：随机数、时间、加密、参数化
 │       │
-│       ├── api/                # 业务接口层（封装后端接口）
+│       ├── api/               # 业务接口层（封装后端接口）
 │       │   ├── __init__.py
 │       │   ├── login_api.py   # 登录相关接口
 │       │   └── user_api.py    # 用户管理接口
 │       │
-│       └── pages/              # 🔥 POM 页面对象（UI 元素+操作）
+│       └── pages/             # 🔥 POM 页面对象（UI 元素+操作）
 │           ├── __init__.py
 │           ├── login_page.py  # 登录页：元素定位+操作方法
 │           └── home_page.py   # 首页：元素定位+操作方法
 │
-├── tests/                      # 🔥 测试用例（镜像 src 结构，企业规范）
+├── tests/                     # 🔥 测试用例（镜像 src 结构，企业规范）
 │   ├── __init__.py
-│   ├── conftest.py             # pytest 全局 fixture：浏览器、page、录屏、截图、日志
-│   ├── test_login/             # 模块用例（按业务划分）
+│   ├── conftest.py            # pytest 全局 fixture：浏览器、page、录屏、截图、日志
+│   ├── test_login/            # 模块用例（按业务划分）
 │   │   ├── __init__.py
 │   │   ├── test_login_success.py
 │   │   └── test_login_fail.py
@@ -84,8 +83,8 @@ pythonPro/                      # 项目根目录（全小写、短名）
 │   ├── allure-results/         # allure 原始数据
 │   └── html/                   # html 报告
 │
-├── artifacts/                   # 🔥 视频/截图（playwright 产出，git 忽略）
-│   ├── videos/                  # 录屏文件（.webm）
+├── artifacts/                  # 🔥 视频/截图（playwright 产出，git 忽略）
+│   ├── videos/                 # 录屏文件（.webm）
 │   └── screenshots/            # 失败截图
 │
 ├── fixtures/                   # 🔥 扩展 fixture（复杂场景）
