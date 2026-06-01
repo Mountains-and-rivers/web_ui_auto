@@ -18,7 +18,7 @@
 ## 目录结构说明
 
 ```
-pythonPro/                     # 项目根目录（全小写、短名）
+web_ui_auto/                     # 项目根目录（全小写、短名）
 ├── .gitignore                 # 忽略：logs、reports、videos、.env、venv
 ├── README.md                  # 项目说明、部署、运行命令
 ├── pyproject.toml             # 依赖 + pytest + allure 配置（企业主推）
