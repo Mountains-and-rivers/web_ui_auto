@@ -139,7 +139,7 @@ headless = settings.get('browser.headless')
 
 ```bash
 pip install pytest-playwright
-playwright install
+playwright install #安装chromium 插件
 pip install -r requirements.txt
 ```
 
@@ -181,6 +181,7 @@ pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 # 1. 卸载旧版本
 pip install -e . 【开发模式】
 pip install  . 【发布模式】
+
 # 2. 卸载旧版本
 pip uninstall web_ui_auto -y
 
