@@ -32,6 +32,9 @@ setup(
         "testdata": "testdata",
     },
     
+    # 添加顶层模块
+    py_modules=["main"],
+    
     python_requires=">=3.8",
     install_requires=[
         "playwright>=1.40.0",
@@ -55,7 +58,7 @@ setup(
     # 添加命令行入口点
     entry_points={
         "console_scripts": [
-            "web-ui-auto=auto.main:main",
+            "web-ui-auto=main:main",
         ],
     },
     
