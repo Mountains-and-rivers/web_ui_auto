@@ -14,6 +14,7 @@ from playwright.async_api import Page
 from playwright.sync_api import Page as SyncPage
 from playwright.sync_api import expect
 
+from ..utils.coordinates import click_and_type_by_coordinates
 from ..utils.logger import logger
 from ..utils.screenshot import take_screenshot
 from .exceptions import ElementNotFoundError, TimeoutError
@@ -163,24 +164,9 @@ class BasePage:
             text: 要输入的文本
         """
         try:
-            logger.info(f"通过坐标输入文本: ({x}, {y}), 文本: {text}")
-            # 点击指定坐标
-            self.page.mouse.click(x, y)
-            logger.info(f"已点击坐标: ({x}, {y})")
-            
-            # 等待焦点获得
-            self.page.wait_for_timeout(100)
-            
-            # 清空已有内容
-            self.page.keyboard.press("Control+A")
-            self.page.wait_for_timeout(50)
-            
-            # 输入文本
-            self.page.keyboard.type(text, delay=50)
-            logger.info(f"通过坐标输入文本成功: {text}")
+            click_and_type_by_coordinates(self.page, x, y, text)
         except Exception as e:
             logger.error(f"通过坐标输入文本失败: {e}")
-            take_screenshot(self.page, "input_by_coordinates_failed")
             raise
 
     def is_visible(self, locator: str, timeout: int = 5000) -> bool:

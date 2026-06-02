@@ -18,17 +18,15 @@ fix_encoding()
 
 import os
 import traceback
-import tkinter as tk
-import ctypes
 import pytest
 from _pytest.outcomes import Skipped
-from playwright.sync_api import sync_playwright
 import time
 
 # 添加 src 目录到 Python 路径
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT / "src"))
 
+from auto.utils.browser import create_context, launch_browser, maximize_page
 from auto.utils.logger import logger
 from auto.utils.screenshot import take_screenshot
 from config.settings import get_settings
@@ -60,34 +58,7 @@ def browser(settings):
         Playwright browser 对象
     """
     logger.info("启动浏览器")
-    
-    # 获取系统屏幕分辨率
-    root = tk.Tk()
-    root.withdraw()  # 隐藏tkinter窗口
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    root.destroy()
-    logger.info(f"系统屏幕分辨率: {screen_width} x {screen_height}")
-    
-    playwright = sync_playwright().start()
-
-    # 根据配置选择浏览器类型
-    browser_type = settings.get("browser.type", "chromium")
-    headless = settings.get("browser.headless", False)
-    timeout = settings.get("browser.timeout", 30000)
-
-    logger.info(f"浏览器类型: {browser_type}, headless: {headless}")
-
-    if browser_type == "chromium":
-        browser = playwright.chromium.launch(headless=headless)
-    elif browser_type == "firefox":
-        browser = playwright.firefox.launch(headless=headless)
-    else:
-        browser = playwright.webkit.launch(headless=headless)
-
-    # 保存分辨率到浏览器对象，供后续使用
-    browser.screen_width = screen_width
-    browser.screen_height = screen_height
+    playwright, browser = launch_browser(settings)
 
     yield browser
 
@@ -113,24 +84,7 @@ def context(browser, settings):
     """
     logger.info("创建浏览器上下文")
 
-    # 录屏配置
-    record_video_dir = None
-    if settings.get("video.enabled", True):
-        video_dir = Path(__file__).parent.parent / settings.get("video.path", "artifacts/videos/")
-        video_dir.mkdir(parents=True, exist_ok=True)
-        record_video_dir = str(video_dir)
-        logger.info(f"录屏目录: {record_video_dir}")
-
-    # 获取系统屏幕分辨率
-    screen_width = getattr(browser, 'screen_width', 1920)
-    screen_height = getattr(browser, 'screen_height', 1080)
-    logger.info(f"浏览器分辨率: {screen_width} x {screen_height}")
-    
-    # 设置视口为屏幕大小
-    context = browser.new_context(
-        record_video_dir=record_video_dir,
-        viewport={"width": screen_width, "height": screen_height}
-    )
+    context = create_context(browser, settings)
     yield context
 
     # 清理
@@ -153,16 +107,8 @@ def page(context):
     """
     logger.info("创建页面对象")
     page = context.new_page()
-    
-    # 最大化浏览器窗口到屏幕大小
-    try:
-        page.evaluate("window.moveTo(0, 0); window.resizeTo(screen.width, screen.height);")
-        logger.info("已最大化浏览器窗口")
-    except Exception as e:
-        logger.debug(f"JavaScript 最大化失败: {e}")
-    
-    page.wait_for_timeout(200)
-    
+    maximize_page(page)
+
     yield page
 
     # 清理
