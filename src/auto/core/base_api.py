@@ -10,8 +10,8 @@ BaseAPI 提供了 HTTP 请求的基础功能，包括：
 
 from typing import Any, Dict, Optional
 
-from ..utils.logger import logger
-from .exceptions import NetworkError
+from auto.utils import logger
+from auto.core.exceptions import NetworkError
 
 
 class BaseAPI:

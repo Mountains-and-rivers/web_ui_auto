@@ -13,7 +13,7 @@ import string
 import time
 from typing import Any, List, Optional
 
-from .logger import logger
+from auto.utils.logger import logger
 
 
 def generate_random_string(length: int = 10, chars: Optional[str] = None) -> str:

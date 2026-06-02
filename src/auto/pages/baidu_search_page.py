@@ -6,9 +6,9 @@
 
 from playwright.sync_api import Page
 
-from ..core.base_page import BasePage
-from ..utils.coordinates import get_center_coordinates
-from ..utils.logger import logger
+from auto.core import BasePage
+from auto.utils import logger
+from auto.utils.coordinates import get_center_coordinates
 
 
 class BaiduSearchPage(BasePage):

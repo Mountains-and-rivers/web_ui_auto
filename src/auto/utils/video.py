@@ -12,7 +12,7 @@ from typing import Optional
 
 from playwright.sync_api import Page
 
-from .logger import logger
+from auto.utils.logger import logger
 
 
 def start_video_recording(page: Page, test_name: str) -> Optional[str]:

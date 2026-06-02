@@ -6,8 +6,8 @@ from typing import Tuple
 
 from playwright.sync_api import Page
 
-from .logger import logger
-from .screenshot import take_screenshot
+from auto.utils.logger import logger
+from auto.utils.screenshot import take_screenshot
 
 
 def get_center_coordinates(page: Page, y: int, default_width: int = 1920) -> Tuple[int, int]:

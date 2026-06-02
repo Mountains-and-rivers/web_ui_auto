@@ -5,12 +5,15 @@
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent / "src"))
+# 将 src 目录添加到 Python 路径，支持 auto 包的绝对导入
+PROJECT_ROOT = Path(__file__).parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
 from auto.encoding_fix import fix_encoding
 fix_encoding()
 
 from playwright.sync_api import sync_playwright
-from src.auto.utils.logger import logger
+from auto.utils import logger
 
 
 def get_resolution_info():

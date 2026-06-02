@@ -6,8 +6,8 @@
 
 from playwright.sync_api import Page
 
-from ..core.base_page import BasePage
-from ..utils.logger import logger
+from auto.core import BasePage
+from auto.utils import logger
 
 
 class HomePage(BasePage):

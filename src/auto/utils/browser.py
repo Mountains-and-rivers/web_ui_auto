@@ -9,7 +9,7 @@ from typing import Any, Tuple
 import tkinter as tk
 from playwright.sync_api import Browser, BrowserContext, sync_playwright
 
-from .logger import logger
+from auto.utils.logger import logger
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 

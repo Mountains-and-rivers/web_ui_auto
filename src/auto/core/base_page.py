@@ -14,10 +14,9 @@ from playwright.async_api import Page
 from playwright.sync_api import Page as SyncPage
 from playwright.sync_api import expect
 
-from ..utils.coordinates import click_and_type_by_coordinates
-from ..utils.logger import logger
-from ..utils.screenshot import take_screenshot
-from .exceptions import ElementNotFoundError, TimeoutError
+from auto.utils import logger, take_screenshot
+from auto.utils.coordinates import click_and_type_by_coordinates
+from auto.core.exceptions import ElementNotFoundError, TimeoutError
 
 
 class BasePage:

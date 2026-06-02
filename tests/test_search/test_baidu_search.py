@@ -10,9 +10,8 @@
 
 import pytest
 
-from src.auto.pages.baidu_search_page import BaiduSearchPage
-from src.auto.utils.logger import logger
-from src.auto.utils.screenshot import take_screenshot
+from auto.pages import BaiduSearchPage
+from auto.utils import logger, take_screenshot
 
 
 class TestBaiduSearch:

@@ -13,7 +13,7 @@ from typing import Any, Dict, List, Optional
 
 import yaml
 
-from .logger import logger
+from auto.utils.logger import logger
 
 
 def read_json(file_path: str) -> Dict:

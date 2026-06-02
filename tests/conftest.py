@@ -12,7 +12,10 @@ pytest 全局 fixture 配置。
 import sys
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
+# 将 src 目录添加到 Python 路径，支持 auto 包的绝对导入
+PROJECT_ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(PROJECT_ROOT / "src"))
+
 from auto.encoding_fix import fix_encoding
 fix_encoding()
 
@@ -22,13 +25,8 @@ import pytest
 from _pytest.outcomes import Skipped
 import time
 
-# 添加 src 目录到 Python 路径
-PROJECT_ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(PROJECT_ROOT / "src"))
-
-from auto.utils.browser import create_context, launch_browser, maximize_page
-from auto.utils.logger import logger
-from auto.utils.screenshot import take_screenshot
+# 导入核心组件 - 使用优化后的 __init__.py 导出
+from auto.utils import create_context, launch_browser, maximize_page, logger, take_screenshot
 from config.settings import get_settings
 
 

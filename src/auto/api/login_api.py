@@ -4,8 +4,8 @@
 提供登录相关的 API 接口封装。
 """
 
-from ..core.base_api import BaseAPI
-from ..utils.logger import logger
+from auto.core import BaseAPI
+from auto.utils import logger
 
 
 class LoginAPI(BaseAPI):
