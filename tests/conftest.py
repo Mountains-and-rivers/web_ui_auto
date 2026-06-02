@@ -2,10 +2,10 @@
 pytest 全局 fixture 配置。
 
 定义全局的 fixture，包括：
-- 浏览器和页面对象
 - 日志记录
-- 截图和录屏
 - 失败处理
+- 配置 browser_context_args 供 pytest-playwright 使用
+- 浏览器分辨率和窗口最大化
 """
 
 # 导入编码修复模块
@@ -13,14 +13,26 @@ import auto.encoding_fix  # noqa: F401
 
 import os
 import traceback
+import tkinter as tk
 import pytest
 from _pytest.outcomes import Skipped
+from pathlib import Path
 
 # 导入核心组件
 from auto.utils.logger import logger
-from auto.utils.browser import create_context, launch_browser, maximize_page
 from auto.utils.screenshot import take_screenshot
 from config.settings import get_settings
+
+
+def get_screen_resolution() -> tuple:
+    """获取系统屏幕分辨率。"""
+    root = tk.Tk()
+    root.withdraw()
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    root.destroy()
+    logger.info(f"系统屏幕分辨率: {screen_width} x {screen_height}")
+    return screen_width, screen_height
 
 
 @pytest.fixture(scope="session")
@@ -35,76 +47,115 @@ def settings():
     return get_settings(env)
 
 
-@pytest.fixture
-def browser(settings):
+@pytest.fixture(scope="session")
+def browser_context_args(settings):
     """
-    创建浏览器实例。
-
-    Scope: function（每个测试函数）
-
+    配置 pytest-playwright 的浏览器上下文参数。
+    
+    在浏览器启动时就设置好视口大小，确保立即最大化。
+    
     Args:
         settings: 全局配置
-
-    Yields:
-        Playwright browser 对象
+        
+    Returns:
+        dict: 浏览器上下文配置
     """
-    logger.info("启动浏览器")
-    playwright, browser = launch_browser(settings)
+    # 获取屏幕分辨率
+    screen_width, screen_height = get_screen_resolution()
+    
+    # 录屏配置
+    video_enabled = settings.get("video.enabled", True)
+    video_path = settings.get("video.path", "artifacts/videos/")
+    
+    # 设置 viewport 为屏幕分辨率
+    context_args = {
+        "viewport": {"width": screen_width, "height": screen_height},
+    }
+    
+    if video_enabled:
+        # 创建录屏目录
+        video_dir = Path(video_path)
+        video_dir.mkdir(parents=True, exist_ok=True)
+        context_args["record_video_dir"] = str(video_dir)
+        logger.info(f"启用录屏，目录: {video_dir}")
+    
+    logger.info(f"浏览器上下文视口设置为: {screen_width} x {screen_height}")
+    
+    return context_args
 
-    yield browser
 
-    # 清理
-    logger.info("关闭浏览器")
-    browser.close()
-    playwright.stop()
-
-
-@pytest.fixture
-def context(browser, settings):
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
     """
-    创建浏览器上下文。
+    pytest hook - 在测试完成后重命名录屏文件为用例的第二个 mark。
+    """
+    outcome = yield
+    report = outcome.get_result()
+    
+    # 在 teardown 阶段处理（无论成功还是失败）
+    if call.when == "call" or (call.when == "teardown" and hasattr(item, "funcargs")):
+        try:
+            # 获取所有 marks
+            all_marks = list(item.iter_markers())
+            print(f"\n{'='*60}")
+            print(f"用例: {item.name}")
+            print(f"阶段: {call.when}")
+            print(f"所有 marks: {[m.name for m in all_marks]}")
+            
+            # 反转得到从上到下的顺序
+            all_marks_reversed = list(reversed(all_marks))
+            print(f"反转后 marks: {[m.name for m in all_marks_reversed]}")
+            
+            if len(all_marks_reversed) >= 2:
+                video_name = all_marks_reversed[1].name
+                print(f"录屏文件名: {video_name}")
+                
+                # 获取页面对象并重命名视频
+                if "page" in item.funcargs:
+                    page = item.funcargs["page"]
+                    if page and hasattr(page, 'video') and page.video:
+                        try:
+                            video_path = page.video.path()
+                            print(f"视频路径: {video_path}")
+                            
+                            if Path(video_path).exists():
+                                new_path = Path(video_path).parent / f"{video_name}.webm"
+                                Path(video_path).rename(new_path)
+                                print(f"✅ 已重命名为: {new_path.name}")
+                            else:
+                                print(f"⚠️ 视频文件不存在: {video_path}")
+                        except Exception as ve:
+                            print(f"️ 视频处理错误: {ve}")
+            else:
+                print(f"️ marks 数量不足: {len(all_marks_reversed)}")
+            
+            print(f"{'='*60}\n")
+        except Exception as e:
+            print(f"❌ 错误: {e}")
+            import traceback
+            traceback.print_exc()
+    
+    return report
 
-    Scope: function
+
+def pytest_configure(config):
+    """
+    pytest hook - 配置阶段。
 
     Args:
-        browser: 浏览器对象
-        settings: 全局配置
-
-    Yields:
-        Playwright context 对象
+        config: pytest 配置对象
     """
-    logger.info("创建浏览器上下文")
-
-    context = create_context(browser, settings)
-    yield context
-
-    # 清理
-    logger.info("关闭浏览器上下文")
-    context.close()
+    logger.info("pytest 配置完成")
 
 
-@pytest.fixture
-def page(context):
+def pytest_unconfigure(config):
     """
-    创建页面对象。
-
-    Scope: function
+    pytest hook - 清理阶段。
 
     Args:
-        context: 浏览器上下文
-
-    Yields:
-        Playwright page 对象
+        config: pytest 配置对象
     """
-    logger.info("创建页面对象")
-    page = context.new_page()
-    maximize_page(page)
-
-    yield page
-
-    # 清理
-    logger.info("关闭页面对象")
-    page.close()
+    logger.info("pytest 清理完成")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -187,25 +238,4 @@ def pytest_runtest_call(item):
                 logger.warning(f"失败截图保存失败: {e}")
 
 
-
-def pytest_configure(config):
-    """
-    pytest hook - 配置阶段。
-
-    Args:
-        config: pytest 配置对象
-    """
-    logger.info("pytest 配置完成")
-
-
-def pytest_unconfigure(config):
-    """
-    pytest hook - 清理阶段。
-
-    Args:
-        config: pytest 配置对象
-    """
-    logger.info("pytest 清理完成")
-
-
-__all__ = ["settings", "browser", "context", "page"]
+__all__ = ["settings", "browser_context_args"]

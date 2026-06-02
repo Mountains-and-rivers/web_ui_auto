@@ -35,6 +35,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "playwright>=1.40.0",
+        "pytest-playwright>=0.4.3",
         "pytest>=7.4.0",
         "pytest-html>=4.0.0",
         "allure-pytest>=2.13.0",
