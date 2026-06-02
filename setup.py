@@ -50,6 +50,14 @@ setup(
             "isort>=5.12.0",
         ]
     },
+    
+    # 添加命令行入口点
+    entry_points={
+        "console_scripts": [
+            "web-ui-auto=auto.main:main",
+        ],
+    },
+    
     classifiers=[
         "Programming Language :: Python :: 3.8",
         "License :: OSI Approved :: MIT License",

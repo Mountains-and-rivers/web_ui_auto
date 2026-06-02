@@ -17,6 +17,7 @@ logs/
 # 测试报告
 reports/
 allure-results/
+html-report/
 
 # 视频/截图
 artifacts/videos/
@@ -34,5 +35,77 @@ artifacts/screenshots/
 .env
 .env.local
 
+# 构建产物
+build/
+dist/
+*.egg-info/
+*.egg
+*.whl
+*.tar.gz
+
+# pytest缓存
+.pytest_cache/
+.mypy_cache/
+
+# 临时文件
+*.tmp
+*.bak
+*.swp
+Thumbs.db
+
 # 项目特定
 *.webm
+
+# Coverage
+.coverage
+htmlcov/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# tox
+.tox/
+
+# nox
+.nox/
+
+# Sphinx documentation
+docs/_build/
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# poetry
+poetry.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# pyre type checker
+.pyre/
+
+# mypy
+.dmypy.json
+
+# cython debug symbols
+cython_debug/

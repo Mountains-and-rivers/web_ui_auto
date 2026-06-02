@@ -7,6 +7,7 @@ fixtures/__init__.py
 fixtures/db_fixture.py
 src/auto/__init__.py
 src/auto/encoding_fix.py
+src/auto/main.py
 src/auto/api/__init__.py
 src/auto/api/login_api.py
 src/auto/api/user_api.py
@@ -28,5 +29,6 @@ src/auto/utils/video.py
 web_ui_auto.egg-info/PKG-INFO
 web_ui_auto.egg-info/SOURCES.txt
 web_ui_auto.egg-info/dependency_links.txt
+web_ui_auto.egg-info/entry_points.txt
 web_ui_auto.egg-info/requires.txt
 web_ui_auto.egg-info/top_level.txt

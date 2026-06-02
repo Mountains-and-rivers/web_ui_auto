@@ -28,6 +28,9 @@ dev = [
     "isort>=5.12.0",
 ]
 
+[project.scripts]
+web-ui-auto = "auto.main:main"
+
 [tool.pytest.ini_options]
 # pytest 配置
 test_paths = ["tests"]
