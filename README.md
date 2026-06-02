@@ -186,7 +186,7 @@ Remove-Item -Recurse -Force build, dist, *.egg-info -ErrorAction SilentlyContinu
 python setup.py sdist bdist_wheel
 
 # 4. 安装新版本（强制重装以确保脚本生成）
-pip install --force-reinstall dist\web_ui_auto-*.whl
+pip install --force-reinstall --no-deps (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
 
 # 5. 执行命令
 web-ui-auto run
