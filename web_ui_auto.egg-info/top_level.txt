@@ -1,0 +1,4 @@
+auto
+config
+fixtures
+testdata

@@ -1,5 +1,9 @@
 # 核心依赖（精简版，避免编译问题）
-playwright>=1.40.0
-pytest>=7.0.0
-pyyaml>=6.0
-loguru>=0.7.0
+setuptools>=45
+wheel>=0.38.0
+pytest==7.4.4
+pytest-html==4.1.1
+allure-pytest==2.13.2
+black==24.1.1
+flake8==7.0.0
+isort==5.13.2

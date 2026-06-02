@@ -1,0 +1,23 @@
+Metadata-Version: 2.4
+Name: web-ui-auto
+Version: 1.0.0
+Summary: 自动化测试框架 - 基于 Playwright + Pytest
+Author: Author
+Author-email: Author <author@example.com>
+Requires-Python: >=3.8
+License-File: LICENSE
+Requires-Dist: playwright>=1.40.0
+Requires-Dist: pytest>=7.4.0
+Requires-Dist: pytest-html>=4.0.0
+Requires-Dist: allure-pytest>=2.13.0
+Requires-Dist: pyyaml>=6.0
+Requires-Dist: loguru>=0.7.0
+Provides-Extra: dev
+Requires-Dist: setuptools>=45; extra == "dev"
+Requires-Dist: wheel>=0.38.0; extra == "dev"
+Requires-Dist: black>=23.0.0; extra == "dev"
+Requires-Dist: flake8>=6.0.0; extra == "dev"
+Requires-Dist: isort>=5.12.0; extra == "dev"
+Dynamic: author
+Dynamic: license-file
+Dynamic: requires-python
