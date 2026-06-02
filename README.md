@@ -138,6 +138,8 @@ headless = settings.get('browser.headless')
 ### 1. 安装依赖
 
 ```bash
+pip install pytest-playwright
+playwright install
 pip install -r requirements.txt
 ```
 
@@ -177,21 +179,24 @@ pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 
 ```bash
 # 1. 卸载旧版本
+pip install -e . 【开发模式】
+pip install  . 【发布模式】
+# 2. 卸载旧版本
 pip uninstall web_ui_auto -y
 
-# 2. 清理构建产物
+# 3. 清理构建产物
 Remove-Item -Recurse -Force build, dist, *.egg-info -ErrorAction SilentlyContinue
 
-# 3. 重新打包
+# 4. 重新打包
 python setup.py sdist bdist_wheel
 
-# 4. 安装新版本（强制重装以确保脚本生成）
+# 5. 安装新版本（强制重装以确保脚本生成）
 pip install --force-reinstall --no-deps (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
 
-# 5. 执行命令
+# 6. 执行命令
 web-ui-auto run
 
-# 6. 查找命令位置
+# 7. 查找命令位置
 where.exe web-ui-auto
 ```
 ## 开发指南
