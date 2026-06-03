@@ -1,4 +1,4 @@
-# web_ui_auto web端UI自动化测试框架
+# web_ui_auto web前端UI自动化测试框架
 
 > 基于 Playwright + Pytest 的企业级自动化测试框架
 
