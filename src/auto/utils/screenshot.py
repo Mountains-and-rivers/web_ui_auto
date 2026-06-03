@@ -24,7 +24,7 @@ def take_screenshot(page: Page, name: str = "screenshot") -> str:
         name: 截图名称（不含扩展名）
 
     Returns:
-        截图文件路径
+        截图文件路径，失败返回 None
 
     Raises:
         Exception: 截图失败
@@ -37,28 +37,33 @@ def take_screenshot(page: Page, name: str = "screenshot") -> str:
         # 生成文件名
         screenshot_path = screenshot_dir / f"{name}.png"
 
-        # 获取截图
-        page.screenshot(path=str(screenshot_path))
-        logger.info(f"截图已保存: {screenshot_path}")
+        # 检查页面是否可用
+        if not page.is_closed():
+            # 获取截图
+            page.screenshot(path=str(screenshot_path))
+            logger.info(f"截图已保存: {screenshot_path}")
 
-        # 尝试附加到 Allure 报告
-        try:
-            import allure
+            # 尝试附加到 Allure 报告
+            try:
+                import allure
 
-            with open(screenshot_path, "rb") as f:
-                allure.attach.file(
-                    source=screenshot_path,
-                    name=f"{name}.png",
-                    attachment_type=allure.attachment_type.PNG,
-                )
-            logger.debug(f"截图已附加到 Allure 报告: {name}")
-        except ImportError:
-            logger.debug("Allure 未安装，跳过报告附件")
+                with open(screenshot_path, "rb") as f:
+                    allure.attach.file(
+                        source=screenshot_path,
+                        name=f"{name}.png",
+                        attachment_type=allure.attachment_type.PNG,
+                    )
+                logger.debug(f"截图已附加到 Allure 报告: {name}")
+            except ImportError:
+                logger.debug("Allure 未安装，跳过报告附件")
 
-        return str(screenshot_path)
+            return str(screenshot_path)
+        else:
+            logger.warning(f"页面已关闭，无法截图: {name}")
+            return None
     except Exception as e:
         logger.error(f"截图失败: {name}, 错误: {e}")
-        raise
+        return None
 
 
 def take_element_screenshot(page: Page, locator: str, name: str = "element") -> str:

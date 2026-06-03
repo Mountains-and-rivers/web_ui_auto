@@ -6,12 +6,14 @@ pytest 全局 fixture 配置。
 - 失败处理
 - 配置 browser_context_args 供 pytest-playwright 使用
 - 浏览器分辨率和窗口最大化
+- 重写 page fixture 支持自定义录屏文件名
 """
 
 # 导入编码修复模块
 import auto.encoding_fix  # noqa: F401
 
 import os
+import time
 import traceback
 import tkinter as tk
 import pytest
@@ -19,8 +21,9 @@ from _pytest.outcomes import Skipped
 from pathlib import Path
 
 # 导入核心组件
-from auto.utils.logger import logger
+from auto.utils.logger import logger, set_case_logger, clear_case_logger
 from auto.utils.screenshot import take_screenshot
+from auto.utils.video import save_video_with_name, cleanup_temp_dir
 from config.settings import get_settings
 
 
@@ -53,6 +56,7 @@ def browser_context_args(settings):
     配置 pytest-playwright 的浏览器上下文参数。
     
     在浏览器启动时就设置好视口大小，确保立即最大化。
+    将录屏临时文件保存到隐藏目录 .temp_videos 中，避免污染主目录。
     
     Args:
         settings: 全局配置
@@ -63,7 +67,7 @@ def browser_context_args(settings):
     # 获取屏幕分辨率
     screen_width, screen_height = get_screen_resolution()
     
-    # 录屏配置
+    # 录屏配置 - 使用隐藏目录存储临时文件
     video_enabled = settings.get("video.enabled", True)
     video_path = settings.get("video.path", "artifacts/videos/")
     
@@ -73,68 +77,65 @@ def browser_context_args(settings):
     }
     
     if video_enabled:
-        # 创建录屏目录
+        # 创建隐藏目录用于存储 Playwright 生成的临时录屏文件
+        # 使用 .temp_videos 作为临时目录名（以 . 开头在大多数系统中是隐藏的）
         video_dir = Path(video_path)
-        video_dir.mkdir(parents=True, exist_ok=True)
-        context_args["record_video_dir"] = str(video_dir)
-        logger.info(f"启用录屏，目录: {video_dir}")
+        temp_video_dir = video_dir / ".temp_videos"
+        temp_video_dir.mkdir(parents=True, exist_ok=True)
+        
+        context_args["record_video_dir"] = str(temp_video_dir)
+        logger.info(f"启用录屏，临时文件目录: {temp_video_dir}")
     
     logger.info(f"浏览器上下文视口设置为: {screen_width} x {screen_height}")
     
     return context_args
 
 
+@pytest.fixture(scope="function")
+def page(context, request):
+    """
+    重写 pytest-playwright 的 page fixture。
+    
+    在 context 关闭前调用 save_video_with_name() 直接保存录屏为指定文件名。
+    
+    Args:
+        context: pytest-playwright 提供的 browser context
+        request: pytest request 对象，用于获取测试用例信息
+        
+    Yields:
+        Page: Playwright Page 对象
+    """
+    page = context.new_page()
+    yield page
+    
+    # 在 context 关闭前保存录屏
+    try:
+        # 获取所有 marks
+        all_marks = list(request.node.iter_markers())
+        all_marks_reversed = list(reversed(all_marks))
+        
+        if len(all_marks_reversed) >= 2:
+            # 使用第二个 mark 作为录屏文件名
+            video_name = all_marks_reversed[1].name
+            logger.info(f"准备保存录屏: {video_name}")
+            
+            # 调用封装的方法直接保存
+            save_video_with_name(page, video_name)
+        else:
+            logger.debug("测试用例标记不足2个，跳过录屏保存")
+    except Exception as e:
+        logger.warning(f"保存录屏失败: {e}")
+    
+    page.close()
+
+
 @pytest.hookimpl(hookwrapper=True)
 def pytest_runtest_makereport(item, call):
     """
-    pytest hook - 在测试完成后重命名录屏文件为用例的第二个 mark。
+    pytest hook - 收集测试报告信息。
     """
     outcome = yield
     report = outcome.get_result()
-    
-    # 在 teardown 阶段处理（无论成功还是失败）
-    if call.when == "call" or (call.when == "teardown" and hasattr(item, "funcargs")):
-        try:
-            # 获取所有 marks
-            all_marks = list(item.iter_markers())
-            print(f"\n{'='*60}")
-            print(f"用例: {item.name}")
-            print(f"阶段: {call.when}")
-            print(f"所有 marks: {[m.name for m in all_marks]}")
-            
-            # 反转得到从上到下的顺序
-            all_marks_reversed = list(reversed(all_marks))
-            print(f"反转后 marks: {[m.name for m in all_marks_reversed]}")
-            
-            if len(all_marks_reversed) >= 2:
-                video_name = all_marks_reversed[1].name
-                print(f"录屏文件名: {video_name}")
-                
-                # 获取页面对象并重命名视频
-                if "page" in item.funcargs:
-                    page = item.funcargs["page"]
-                    if page and hasattr(page, 'video') and page.video:
-                        try:
-                            video_path = page.video.path()
-                            print(f"视频路径: {video_path}")
-                            
-                            if Path(video_path).exists():
-                                new_path = Path(video_path).parent / f"{video_name}.webm"
-                                Path(video_path).rename(new_path)
-                                print(f"✅ 已重命名为: {new_path.name}")
-                            else:
-                                print(f"⚠️ 视频文件不存在: {video_path}")
-                        except Exception as ve:
-                            print(f"️ 视频处理错误: {ve}")
-            else:
-                print(f"️ marks 数量不足: {len(all_marks_reversed)}")
-            
-            print(f"{'='*60}\n")
-        except Exception as e:
-            print(f"❌ 错误: {e}")
-            import traceback
-            traceback.print_exc()
-    
     return report
 
 
@@ -156,6 +157,16 @@ def pytest_unconfigure(config):
         config: pytest 配置对象
     """
     logger.info("pytest 清理完成")
+    
+    # 清理临时录屏目录（整个 .temp_videos 目录）
+    try:
+        # 获取视频目录
+        video_path = "artifacts/videos/"
+        
+        # 清理临时目录
+        cleanup_temp_dir(video_path)
+    except Exception as e:
+        logger.warning(f"清理临时录屏目录失败: {e}")
 
 
 @pytest.hookimpl(hookwrapper=True)
@@ -163,6 +174,15 @@ def pytest_runtest_call(item):
     """
     pytest hook - 执行测试函数并在同一个 hook 中收集标签、执行结果、执行日志。
     """
+    # 获取测试文件名（去掉 .py 后缀）
+    test_file = item.fspath.basename.replace('.py', '')
+    
+    # 先设置用例日志
+    set_case_logger(test_file)
+    
+    # 记录测试开始日志
+    logger.info(f"========== 开始执行用例: {item.nodeid} ==========")
+    
     log_messages = []
 
     def _sink(message):
@@ -189,7 +209,17 @@ def pytest_runtest_call(item):
         failed = True
         excinfo = exc
     finally:
+        # 先记录测试结束日志
+        logger.info(f"========== 用例执行结束 ==========")
+        
+        # 先移除 sink，停止收集日志
         logger.remove(sink_id)
+        
+        # 等待日志写入完成
+        time.sleep(0.05)
+        
+        # 清除用例日志设置
+        clear_case_logger()
 
         tags = [marker.name for marker in item.iter_markers() if marker.name != "parametrize"]
         tags_text = ", ".join(tags) if tags else "无"
@@ -199,7 +229,7 @@ def pytest_runtest_call(item):
         elif skipped:
             result_text = "⚠️ SKIPPED"
         else:
-            result_text = "❌ FAILED"
+            result_text = " FAILED"
 
         summary_lines = [
             f"\n========== 用例执行信息 ==========",
