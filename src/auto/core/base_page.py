@@ -18,7 +18,7 @@ from playwright.sync_api import expect
 from auto.utils.logger import logger
 from auto.utils.screenshot import take_screenshot
 from auto.utils.coordinates import click_and_type_by_coordinates
-from auto.core.exceptions import ElementNotFoundError, TimeoutError
+from auto.core.exceptions import ElementNotFoundError, TestTimeoutError
 
 
 class BasePage:
@@ -208,7 +208,7 @@ class BasePage:
             logger.info("页面导航完成")
         except Exception as e:
             logger.error(f"等待导航超时: {e}")
-            raise TimeoutError("页面导航超时") from e
+            raise TestTimeoutError("页面导航超时") from e
 
     def take_screenshot(self, name: str = "screenshot") -> None:
         """
@@ -280,7 +280,7 @@ class BasePage:
             logger.info(f"元素已出现: {locator}")
         except Exception as e:
             logger.error(f"等待元素失败: {locator}, 错误: {e}")
-            raise TimeoutError(f"元素等待超时: {locator}") from e
+            raise TestTimeoutError(f"元素等待超时: {locator}") from e
 
     def refresh_page(self) -> None:
         """刷新页面。"""

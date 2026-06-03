@@ -25,9 +25,9 @@ class ElementNotFoundError(AutoTestException):
     pass
 
 
-class TimeoutError(AutoTestException):
+class TestTimeoutError(AutoTestException):
     """
-    超时异常。
+    测试超时异常。
 
     操作在规定时间内未能完成。
     """
@@ -55,9 +55,9 @@ class NetworkError(AutoTestException):
     pass
 
 
-class AssertionError(AutoTestException):
+class TestAssertionError(AutoTestException):
     """
-    断言失败异常。
+    测试断言失败异常。
 
     测试断言验证失败。
     """
@@ -68,8 +68,8 @@ class AssertionError(AutoTestException):
 __all__ = [
     "AutoTestException",
     "ElementNotFoundError",
-    "TimeoutError",
+    "TestTimeoutError",
     "LoginFailureError",
     "NetworkError",
-    "AssertionError",
+    "TestAssertionError",
 ]
