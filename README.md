@@ -220,25 +220,36 @@ pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 ```
 ## 执行命令-cli命令行方式
 
+### 使用可编辑安装（开发时用）
 ```bash
 # 1. 卸载旧版本
 pip uninstall web_ui_auto -y
-pip install -e .
 
 # 2. 清理构建产物
 Remove-Item -Recurse -Force build, dist, *.egg-info -ErrorAction SilentlyContinue
 
-# 3. 重新打包
+# 3. 可编辑安装（直接链接到源码）
+pip install -e .
+
+# 4. 执行命令
+web-ui-auto run
+```
+### 使用 wheel 包安装（发布时用）
+```bash
+# 1. 清理
+Remove-Item -Recurse -Force build, dist, *.egg-info, __pycache__, src\auto\__pycache__, src\auto\utils\__pycache__, src\auto\core\__pycache__, src\auto\pages\__pycache__, src\auto\api\__pycache__, tests\__pycache__, tests\test_search\__pycache__ -ErrorAction SilentlyContinue
+
+# 2. 打包
 python setup.py sdist bdist_wheel
 
-# 4. 安装新版本（强制重装以确保脚本生成）
+# 3. 卸载旧版本
+pip uninstall web_ui_auto -y
+
+# 4. 安装新版本
 pip install --force-reinstall --no-deps (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
 
 # 5. 执行命令
 web-ui-auto run
-
-# 6. 查找命令位置
-where.exe web-ui-auto
 ```
 ## 开发指南
 
