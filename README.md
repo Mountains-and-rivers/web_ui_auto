@@ -168,36 +168,32 @@ allure serve reports/allure-results
 | tests/conftest.py | 全局 pytest fixture |
 | scripts/ | CI/本地执行脚本 |
 
-## 执行命令-脚本方式
+## 执行命令-脚本命名方式
 
 ```bash
 bash scripts/run_smoke.sh
 bash scripts/run_all.sh
 pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 ```
-## 执行命令-命令行方式
+## 执行命令-cli命令行方式
 
 ```bash
 # 1. 卸载旧版本
-pip install -e . 【开发模式】
-pip install  . 【发布模式】
-
-# 2. 卸载旧版本
 pip uninstall web_ui_auto -y
 
-# 3. 清理构建产物
+# 2. 清理构建产物
 Remove-Item -Recurse -Force build, dist, *.egg-info -ErrorAction SilentlyContinue
 
-# 4. 重新打包
+# 3. 重新打包
 python setup.py sdist bdist_wheel
 
-# 5. 安装新版本（强制重装以确保脚本生成）
+# 4. 安装新版本（强制重装以确保脚本生成）
 pip install --force-reinstall --no-deps (Get-ChildItem dist\*.whl | Select-Object -First 1).FullName
 
-# 6. 执行命令
+# 5. 执行命令
 web-ui-auto run
 
-# 7. 查找命令位置
+# 6. 查找命令位置
 where.exe web-ui-auto
 ```
 ## 开发指南
