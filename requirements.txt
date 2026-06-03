@@ -1,10 +1,14 @@
-# 核心依赖（精简版，避免编译问题）
-setuptools>=45
-wheel>=0.38.0
-pytest-playwright>=0.4.3
-pytest==7.4.4
-pytest-html==4.1.1
-allure-pytest==2.13.2
-black==24.1.1
-flake8==7.0.0
-isort==5.13.2
+# 核心依赖
+setuptools>=45,<85.0.0
+wheel>=0.38.0,<1.0.0
+pytest>=7.4.4,<10.0.0
+pytest-playwright>=0.4.3,<1.0.0
+pytest-html>=4.1.1,<5.0.0
+allure-pytest>=2.13.2,<3.0.0
+PyYAML>=6.0.1,<7.0.0
+loguru>=0.7.2,<1.0.0
+
+# 代码质量工具
+black>=24.1.1,<27.0.0
+flake8>=7.0.0,<8.0.0
+isort>=5.13.2,<9.0.0
