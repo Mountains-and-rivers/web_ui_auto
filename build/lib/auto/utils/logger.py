@@ -68,12 +68,8 @@ def init_cli_logger():
     """初始化 CLI 日志模式（仅在 main.py 中调用）。"""
     global _cli_handler_id
     
-    print("DEBUG: init_cli_logger() 被调用了!")  # 调试输出
-    
     # 确保 CLI 日志目录存在
     CLI_LOG_DIR.mkdir(parents=True, exist_ok=True)
-    
-    print(f"DEBUG: CLI_LOG_DIR = {CLI_LOG_DIR}")  # 调试输出
     
     # 添加 CLI 日志文件输出
     _cli_handler_id = _logger.add(
@@ -85,8 +81,6 @@ def init_cli_logger():
         encoding="utf-8",
         enqueue=False,
     )
-    
-    print(f"DEBUG: CLI handler 已创建, handler_id={_cli_handler_id}")  # 调试输出
 
 
 def set_framework_logger():

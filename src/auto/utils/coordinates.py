@@ -30,6 +30,7 @@ def click_and_type_by_coordinates(page: Page, x: int, y: int, text: str, delay: 
         logger.info(f"已点击坐标: ({x}, {y})")
 
         page.wait_for_timeout(100)
+        # noinspection SpellCheckingInspection
         page.keyboard.press("Control+A")
         page.wait_for_timeout(50)
         page.keyboard.type(text, delay=delay)

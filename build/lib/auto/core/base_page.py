@@ -10,7 +10,8 @@ BasePage 提供了页面对象的基础功能，包括：
 
 from typing import Optional, Tuple
 
-from playwright.async_api import Page
+from playwright.sync_api import Locator
+from playwright.sync_api import FrameLocator
 from playwright.sync_api import Page as SyncPage
 from playwright.sync_api import expect
 
@@ -56,6 +57,7 @@ class BasePage:
         """
         try:
             logger.info(f"导航到 URL: {url}")
+            # noinspection SpellCheckingInspection
             self.page.goto(url, wait_until="networkidle", timeout=self.timeout)
             logger.info(f"成功导航到: {url}")
         except Exception as e:
@@ -63,7 +65,7 @@ class BasePage:
             take_screenshot(self.page, "navigation_failed")
             raise TimeoutError(f"页面加载失败: {url}") from e
 
-    def find_element(self, locator: str, timeout: Optional[int] = None) -> object:
+    def find_element(self, locator: str, timeout: Optional[int] = None) -> Locator:
         """
         查找单个元素。
 
@@ -180,6 +182,7 @@ class BasePage:
         Returns:
             元素是否可见
         """
+        # noinspection PyBroadException
         try:
             logger.debug(f"检查元素可见性: {locator}")
             element = self.page.locator(locator)
@@ -200,6 +203,7 @@ class BasePage:
         timeout = timeout or self.timeout
         try:
             logger.info(f"等待页面导航, 超时: {timeout}ms")
+            # noinspection SpellCheckingInspection
             self.page.wait_for_load_state("networkidle", timeout=timeout)
             logger.info("页面导航完成")
         except Exception as e:
@@ -254,7 +258,7 @@ class BasePage:
         """
         try:
             logger.info(f"切换到 iframe: {locator}")
-            frame = self.page.locator(locator).frame
+            frame = self.page.frame_locator(locator)
             logger.info("切换成功")
             return BasePage(frame, self.timeout)
         except Exception as e:
@@ -282,11 +286,11 @@ class BasePage:
         """刷新页面。"""
         try:
             logger.info("刷新页面")
+            # noinspection SpellCheckingInspection
             self.page.reload(wait_until="networkidle", timeout=self.timeout)
             logger.info("页面刷新成功")
         except Exception as e:
             logger.error(f"页面刷新失败: {e}")
             raise
-
 
 __all__ = ["BasePage"]
