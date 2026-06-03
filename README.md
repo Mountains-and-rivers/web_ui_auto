@@ -11,7 +11,7 @@
 - ✅ **POM 模式**：页面对象模型，提高代码可维护性
 - ✅ **配置分离**：多环境配置管理（dev/qa/prod）
 - ✅ **工具封装**：日志、截图、录屏等通用工具
-- ✅ **src-layout**：源码隔离，符合企业标准布局
+- ✅ **src-layout**：源码隔离，标准布局
 - ✅ **自动报告**：Allure 测试报告集成
 - ✅ **失败追踪**：自动截图和录像保留现场
 
@@ -22,11 +22,11 @@ web_ui_auto/                   # 🔥 项目根目录（全小写、短名）
 ├── .gitignore                 # 忽略：logs、reports、videos、.env、venv
 ├── README.md                  # 项目说明、部署、运行命令
 ├── setup.py                   # 包管理配置
-├── pyproject.toml             # 依赖 + pytest + allure 配置（企业主推）
+├── pyproject.toml             # 依赖 + pytest + allure 配置
 ├── requirements.txt           # 依赖包锁定（pip freeze 产出）
 ├── requirements-dev.txt       # 开发依赖：pytest、black、flake8、allure-pytest
 │
-├── config/                    # 🔥 企业必分环境配置
+├── config/                    # 🔥 环境配置
 │   ├── __init__.py
 │   ├── base.yaml              # 公共配置：超时、浏览器、重试、全局变量
 │   ├── dev.yaml               # 开发环境：URL、账号、开关
@@ -34,16 +34,16 @@ web_ui_auto/                   # 🔥 项目根目录（全小写、短名）
 │   ├── prod.yaml              # 生产环境
 │   └── settings.py            # 配置读取封装（统一加载 yaml）
 │
-├── src/                       # 🔥 源码隔离（企业 src-layout 标准）
+├── src/                       # 🔥 源码隔离
 │   └── auto/                  # 包名：auto（可改）
 │       ├── __init__.py
-│       ├── core/              # 核心封装（企业公共底座）
+│       ├── core/              # 核心封装
 │       │   ├── __init__.py
 │       │   ├── base_page.py   # POM 基类：等待、点击、输入、截图、录屏
 │       │   ├── base_api.py    # 接口基类：请求、签名、重试、异常封装
 │       │   └── exceptions.py  # 自定义异常：元素不存在、登录失败等
 │       │
-│       ├── utils/             # 🔥 工具层（企业统一抽离）
+│       ├── utils/             # 🔥 工具层
 │       │   ├── __init__.py
 │       │   ├── logger.py      # 日志封装：按天切割、控制台+文件、级别控制
 │       │   ├── file_io.py     # 文件读写：json/yaml、目录创建、清理
@@ -61,7 +61,7 @@ web_ui_auto/                   # 🔥 项目根目录（全小写、短名）
 │           ├── login_page.py  # 登录页：元素定位+操作方法
 │           └── home_page.py   # 首页：元素定位+操作方法
 │
-├── tests/                     # 🔥 测试用例（镜像 src 结构，企业规范）
+├── tests/                     # 🔥 测试用例
 │   ├── __init__.py
 │   ├── conftest.py            # pytest 全局 fixture：浏览器、page、录屏、截图、日志
 │   ├── test_search/           # 模块用例demo1，根据业务模块扩展
