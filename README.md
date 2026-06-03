@@ -64,13 +64,9 @@ web_ui_auto/                     # 项目根目录（全小写、短名）
 ├── tests/                     # 🔥 测试用例（镜像 src 结构，企业规范）
 │   ├── __init__.py
 │   ├── conftest.py            # pytest 全局 fixture：浏览器、page、录屏、截图、日志
-│   ├── test_login/            # 模块用例（按业务划分）
+│   ├── test_search/           # 模块用例demo1，根据业务模块扩展
 │   │   ├── __init__.py
-│   │   ├── test_login_success.py
-│   │   └── test_login_fail.py
-│   └── test_home/
-│       ├── __init__.py
-│       └── test_home_nav.py
+│   │   ├── test_baidu_search.py
 │
 ├── testdata/                   # 🔥 测试数据（和代码分离）
 │   ├── login_data.json         # 登录参数化数据
