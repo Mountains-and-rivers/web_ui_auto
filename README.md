@@ -68,19 +68,20 @@ web_ui_auto/                   # 🔥 项目根目录
 │   │   ├── __init__.py
 │   │   ├── test_baidu_search.py
 │
-├── testdata/                   # 🔥 测试数据（和代码分离）
+├── testdata/                   # 🔥 测试数据
 │   ├── login_data.json         # 登录参数化数据
 │   └── user_data.yaml          # 用户数据
 │
-├── logs/                       # 🔥 日志（运行时生成，git 忽略）
+├── logs/                       # 🔥 日志
 │   ├── framework/              # 框架日志
 │   └── cases/                  # 用例日志（按用例名）
+│   └── web-ui-auto/            # 命令行日志
 │
 ├── reports/                    # 🔥 测试报告（allure/pytest-html）
 │   ├── allure-results/         # allure 原始数据
 │   └── html/                   # html 报告
 │
-├── artifacts/                  # 🔥 视频/截图（playwright 产出，git 忽略）
+├── artifacts/                  # 🔥 视频/截图
 │   ├── videos/                 # 录屏文件（.webm）
 │   └── screenshots/            # 失败截图
 │
