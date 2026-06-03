@@ -18,13 +18,13 @@
 ## 目录结构说明
 
 ```
-web_ui_auto/                   # 🔥 项目根目录（全小写、短名）
-├── .gitignore                 # 忽略：logs、reports、videos、.env、venv
-├── README.md                  # 项目说明、部署、运行命令
+web_ui_auto/                   # 🔥 项目根目录
+├── .gitignore                 
+├── README.md                  
 ├── setup.py                   # 包管理配置
 ├── pyproject.toml             # 依赖 + pytest + allure 配置
-├── requirements.txt           # 依赖包锁定（pip freeze 产出）
-├── requirements-dev.txt       # 开发依赖：pytest、black、flake8、allure-pytest
+├── requirements.txt           # 依赖包锁定
+├── requirements-dev.txt       # 开发依赖
 │
 ├── config/                    # 🔥 环境配置
 │   ├── __init__.py
