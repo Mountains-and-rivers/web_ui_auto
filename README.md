@@ -215,7 +215,7 @@ allure serve reports/allure-results
 > 
 > 💡 **提示**：如需查看其他依赖的实际安装版本，可运行 `pip list` 或 `pip show <包名>`
 
-## 执行命令-脚本命名方式
+## 执行命令-脚本命令方式
 
 ```bash
 bash scripts/run_smoke.sh
