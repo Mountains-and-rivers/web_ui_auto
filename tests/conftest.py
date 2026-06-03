@@ -21,7 +21,7 @@ from _pytest.outcomes import Skipped
 from pathlib import Path
 
 # 导入核心组件
-from auto.utils.logger import logger, set_case_logger, clear_case_logger
+from auto.utils.logger import logger, set_framework_logger, set_case_logger, clear_case_logger
 from auto.utils.screenshot import take_screenshot
 from auto.utils.video import save_video_with_name, cleanup_temp_dir
 from config.settings import get_settings
@@ -146,6 +146,9 @@ def pytest_configure(config):
     Args:
         config: pytest 配置对象
     """
+    # 切换到框架日志模式
+    set_framework_logger()
+    
     logger.info("pytest 配置完成")
 
 

@@ -32,6 +32,13 @@ dev = [
 [project.scripts]
 web-ui-auto = "main:main"
 
+[tool.setuptools]
+py-modules = ["main"]
+packages = ["auto", "auto.api", "auto.core", "auto.pages", "auto.utils", "config", "fixtures", "testdata"]
+
+[tool.setuptools.package-dir]
+auto = "src/auto"
+
 [tool.pytest.ini_options]
 # pytest 配置
 test_paths = ["tests"]

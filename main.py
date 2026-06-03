@@ -6,6 +6,15 @@ import argparse
 import subprocess
 from pathlib import Path
 
+from auto.utils.logger import logger, init_cli_logger
+
+
+def _log_header(title: str):
+    """打印分隔线标题。"""
+    logger.info("=" * 60)
+    logger.info(title)
+    logger.info("=" * 60)
+
 
 def run_tests(test_path, extra_args=None):
     """运行pytest测试"""
@@ -15,16 +24,14 @@ def run_tests(test_path, extra_args=None):
     else:
         cmd.extend(["-v", "--tb=short"])
 
-    print(f"执行命令: {' '.join(cmd)}")
+    logger.info(f"执行命令: {' '.join(cmd)}")
     result = subprocess.run(cmd)
     return result.returncode
 
 
 def cmd_run(args):
     """运行测试"""
-    print("=" * 60)
-    print("Web UI Auto - 运行测试")
-    print("=" * 60)
+    _log_header("Web UI Auto - 运行测试")
 
     extra_args = ["-v", "--tb=short"]
     if args.markers:
@@ -37,56 +44,46 @@ def cmd_run(args):
     return run_tests(args.test_path, extra_args)
 
 
+def _run_marked_tests(title: str, marker: str):
+    """运行带标记的测试。"""
+    _log_header(title)
+    return run_tests("tests/", ["-v", "-m", marker])
+
+
 def cmd_smoke(args):
     """运行冒烟测试"""
-    print("=" * 60)
-    print("Web UI Auto - 运行冒烟测试")
-    print("=" * 60)
-    return run_tests(args.test_path, ["-v", "-m", "smoke"])
+    return _run_marked_tests("Web UI Auto - 运行冒烟测试", "smoke")
 
 
 def cmd_critical(args):
     """运行关键路径测试"""
-    print("=" * 60)
-    print("Web UI Auto - 运行关键路径测试")
-    print("=" * 60)
-    return run_tests(args.test_path, ["-v", "-m", "critical"])
+    return _run_marked_tests("Web UI Auto - 运行关键路径测试", "critical")
 
 
 def cmd_api(args):
     """运行API测试"""
-    print("=" * 60)
-    print("Web UI Auto - 运行API测试")
-    print("=" * 60)
-    return run_tests(args.test_path, ["-v", "-m", "api"])
+    return _run_marked_tests("Web UI Auto - 运行API测试", "api")
 
 
 def cmd_ui(args):
     """运行UI测试"""
-    print("=" * 60)
-    print("Web UI Auto - 运行UI测试")
-    print("=" * 60)
-    return run_tests(args.test_path, ["-v", "-m", "ui"])
+    return _run_marked_tests("Web UI Auto - 运行UI测试", "ui")
 
 
 def cmd_report(args):
     """生成Allure报告"""
-    print("=" * 60)
-    print("Web UI Auto - 生成Allure报告")
-    print("=" * 60)
+    _log_header("Web UI Auto - 生成Allure报告")
 
     report_dir = args.allure_dir or "reports/allure-results"
-    run_tests(args.test_path, [f"--alluredir={report_dir}", "-v", "--tb=short"])
+    run_tests("tests/", [f"--alluredir={report_dir}", "-v", "--tb=short"])
 
-    print("\n正在打开Allure报告...")
+    logger.info("正在打开Allure报告...")
     subprocess.run(["allure", "serve", report_dir])
 
 
 def cmd_clean(args):
     """清理缓存和报告"""
-    print("=" * 60)
-    print("Web UI Auto - 清理缓存和报告")
-    print("=" * 60)
+    _log_header("Web UI Auto - 清理缓存和报告")
 
     import shutil
 
@@ -109,36 +106,37 @@ def cmd_clean(args):
                 for path in glob.glob(dir_name):
                     if Path(path).is_dir():
                         shutil.rmtree(path)
-                        print(f"已删除: {path}")
+                        logger.info(f"已删除: {path}")
             else:
                 path = Path(dir_name)
                 if path.exists():
                     shutil.rmtree(path)
-                    print(f"已删除: {dir_name}")
+                    logger.info(f"已删除: {dir_name}")
         except Exception as e:
-            print(f"删除失败 {dir_name}: {e}")
+            logger.error(f"删除失败 {dir_name}: {e}")
 
-    print("\n清理完成！")
+    logger.info("清理完成！")
     return 0
 
 
 def cmd_install_browser(args):
     """安装Playwright浏览器"""
-    print("=" * 60)
-    print("Web UI Auto - 安装Playwright浏览器")
-    print("=" * 60)
+    _log_header("Web UI Auto - 安装Playwright浏览器")
 
     cmd = [sys.executable, "-m", "playwright", "install"]
     if args.with_deps:
         cmd.append("--with-deps")
 
-    print(f"执行命令: {' '.join(cmd)}")
+    logger.info(f"执行命令: {' '.join(cmd)}")
     result = subprocess.run(cmd)
     return result.returncode
 
 
 def main():
     """主函数"""
+    # 初始化 CLI 日志模式
+    init_cli_logger()
+    
     parser = argparse.ArgumentParser(
         prog="web-ui-auto",
         description="Web UI 自动化测试框架 - 命令行工具"
