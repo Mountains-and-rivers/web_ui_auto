@@ -223,6 +223,7 @@ pytest tests/test_search/test_baidu_search.py::test_search_and_click_first -v -s
 ```bash
 # 1. 卸载旧版本
 pip uninstall web_ui_auto -y
+pip install -e .
 
 # 2. 清理构建产物
 Remove-Item -Recurse -Force build, dist, *.egg-info -ErrorAction SilentlyContinue
