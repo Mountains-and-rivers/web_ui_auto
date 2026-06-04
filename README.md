@@ -137,7 +137,8 @@ headless = settings.get('browser.headless')
 
 ```bash
 pip install pytest-playwright
-playwright install #安装chromium 插件
+方式1、playwright install #安装chromium 插件【有外网权限】
+方式2、执行chromium_install.py脚本手工安装
 pip install -r requirements.txt
 ```
 
