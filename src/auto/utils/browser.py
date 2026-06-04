@@ -4,7 +4,7 @@
 封装 Playwright 浏览器启动、上下文创建和页面最大化逻辑，避免重复代码。
 """
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 
 import tkinter as tk
 from playwright.sync_api import Browser, BrowserContext, sync_playwright
@@ -23,20 +23,60 @@ def get_screen_resolution() -> Tuple[int, int]:
     return screen_width, screen_height
 
 
+def _load_chromium_env() -> dict:
+    """
+    加载 .chromium_env 配置文件。
+    
+    从项目根目录向上查找配置文件，返回解析后的配置字典。
+    仅在手动安装 Chromium 时使用。
+    
+    Returns:
+        配置字典，如 {"CHROMIUM_EXECUTABLE": "..."}
+    """
+    config = {}
+    
+    # 查找项目根目录（向上找到包含 setup.py 或 .chromium_env 的目录）
+    current = Path(__file__).parent
+    for _ in range(5):
+        env_file = current / ".chromium_env"
+        if env_file.exists():
+            for line in env_file.read_text(encoding='utf-8').splitlines():
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    if '=' in line:
+                        key, value = line.split('=', 1)
+                        config[key.strip()] = value.strip()
+            break
+        current = current.parent
+    
+    return config
+
+
 def launch_browser(settings: Any) -> tuple[Any, Browser]:
     """启动 Playwright 浏览器并返回 playwright 与 browser 对象。"""
     playwright = sync_playwright().start()
     browser_type = settings.get("browser.type", "chromium")
     headless = settings.get("browser.headless", False)
 
+    # 构建启动参数
+    launch_options: dict[str, Any] = {"headless": headless}
+    
+    # 加载自定义 Chromium 路径配置
+    env_config = _load_chromium_env()
+    if env_config.get("USE_CUSTOM_CHROMIUM") == "true":
+        executable = env_config.get("CHROMIUM_EXECUTABLE")
+        if executable and Path(executable).exists():
+            launch_options["executable_path"] = executable
+            logger.info(f"使用自定义 Chromium: {executable}")
+
     logger.info(f"浏览器类型: {browser_type}, headless: {headless}")
 
     if browser_type == "chromium":
-        browser = playwright.chromium.launch(headless=headless)
+        browser = playwright.chromium.launch(**launch_options)
     elif browser_type == "firefox":
-        browser = playwright.firefox.launch(headless=headless)
+        browser = playwright.firefox.launch(**launch_options)
     else:
-        browser = playwright.webkit.launch(headless=headless)
+        browser = playwright.webkit.launch(**launch_options)
 
     screen_width, screen_height = get_screen_resolution()
     browser.screen_width = screen_width

@@ -91,6 +91,69 @@ def browser_context_args(settings):
     return context_args
 
 
+@pytest.fixture(scope="session")
+def browser_type_launch_args(pytestconfig):
+    """
+    重写 pytest-playwright 的浏览器启动参数。
+    
+    如果存在 .chromium_env 配置且 USE_CUSTOM_CHROMIUM=true，
+    则使用自定义的 Chromium 可执行文件路径（支持手动安装的浏览器）。
+    
+    同时保留 pytest-playwright 原生的 --headed、--slowmo 等参数处理逻辑。
+    """
+    launch_options = {}
+    
+    # ========== 1. 保留 pytest-playwright 原生的命令行参数 ==========
+    
+    # --headed: 有头模式
+    headed_option = pytestconfig.getoption("--headed")
+    if headed_option:
+        launch_options["headless"] = False
+    
+    # --slowmo: 慢动作模式
+    slowmo_ms = pytestconfig.getoption("--slowmo")
+    if slowmo_ms:
+        launch_options["slow_mo"] = slowmo_ms
+    
+    # ========== 2. 加载自定义 Chromium 配置 ==========
+    
+    # 查找项目根目录下的 .chromium_env 文件
+    env_file = Path(__file__).parent.parent / ".chromium_env"
+    
+    if env_file.exists():
+        config = {}
+        for line in env_file.read_text(encoding='utf-8').splitlines():
+            line = line.strip()
+            if line and not line.startswith('#'):
+                if '=' in line:
+                    key, value = line.split('=', 1)
+                    config[key.strip()] = value.strip()
+        
+        # 检查是否启用自定义 Chromium
+        if config.get("USE_CUSTOM_CHROMIUM") == "true":
+            executable = config.get("CHROMIUM_EXECUTABLE")
+            
+            if executable and Path(executable).exists():
+                launch_options["executable_path"] = executable
+                logger.info(f"✅ 使用自定义 Chromium: {executable}")
+                
+                # 记录版本信息
+                version = config.get("CHROMIUM_VERSION", "unknown")
+                platform = config.get("CHROMIUM_PLATFORM", "unknown")
+                logger.info(f"📦 Chromium 版本: {version} (平台: {platform})")
+            else:
+                logger.warning(f"⚠️  自定义 Chromium 配置存在但文件不存在: {executable}")
+                logger.warning("将使用 Playwright 默认浏览器")
+        else:
+            logger.debug("未启用自定义 Chromium，使用 Playwright 默认浏览器")
+    else:
+        logger.debug(".chromium_env 文件不存在，使用 Playwright 默认浏览器")
+    
+    logger.debug(f"浏览器启动参数: {launch_options}")
+    
+    return launch_options
+
+
 @pytest.fixture(scope="function")
 def page(context, request):
     """
