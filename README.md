@@ -22,7 +22,7 @@ web_ui_auto/                   # 🔥 项目根目录
 ├── .gitignore                 
 ├── README.md
 ├── setup.py                   # 包管理配置       
-├── chromium_install.py        # chromium插件安装脚本
+├── chromium_install.py        # chromium插件安装脚本（Usage： python chromium_install.py -h ）
 ├── pyproject.toml             # 依赖 + pytest + allure 配置
 ├── requirements.txt           # 依赖包锁定
 ├── requirements-dev.txt       # 开发依赖
